@@ -18,18 +18,81 @@
         type: 'GET',
         cache: false,
         success: function(data) {
-            var root,allData, body, table;
-            root = $("<div></div>")
-            root.html(data.responseText)
 
-            var content = root.find("#content"); // find all the nodes that have ID "content"
-            var h2s = content.find(".mw-headline"); // search in all "content" nodes for nodes of class ".mw-headline"
+          var root,
+              table,
+              rowsArray,
+              output;
 
-            $.each(h2s, function(index, value) {
-                console.log($(value).text()); // print text
+          // CSV parameters
+          var startDate = 0;
+          var endDate = 2050;
+          var startRow;
+          var endRow;
+          var numColumns = 6;
+
+
+          // Set response into HTML
+          root = $("<div></div>");
+
+          // set all data below the first (header) row into rowsArray.
+          rowsArray = $("<div></div>").html(data.responseText).find(".wikitable").find("tr + tr");
+          // console.log(rowsArray);
+
+          // output will be converted to CSV after the loop ends. Add the header data to output.push.
+          output = new Array();
+          output.push("year,USCensus,PopulationBureau,UN,HYDE,Maddison");
+
+          // set the start date and end date
+          $.each(rowsArray, function(index, value){
+            // Regex Replacement code from http://stackoverflow.com/questions/4083372/in-javascript-jquery-what-is-the-best-way-to-convert-a-number-with-a-comma-into
+            var thisRowYear = parseInt($(value).find("td:nth-child(1)").find("p").html().replace(/,/g, ''), 10);
+            if(thisRowYear == startDate){
+              startRow = index;
+            }
+            if(thisRowYear == endDate){
+              endRow = index;
+            }
+          });
+          rowsArray = rowsArray.slice(startRow, endRow+1);
+
+          
+          $.each(rowsArray, function(index, value){
+            //the array of td elements should only contain the first numColumns columns
+            var tdArray = $(value).find("td").slice(0, numColumns);
+            var line = "";
+            var noEntriesFlag = true; //set to false if at least one td contains data.
+
+            $.each(tdArray, function(tdIndex, tdValue){
+              
+              var thisPopulationParagraph,  
+                  thisPopulation;
+
+              thisPopulationParagraph = $(tdValue).find("p").html();
+              if (thisPopulationParagraph==undefined) {
+                thisPopulation = "";
+              } else {
+              // Regex Replacement code from http://stackoverflow.com/questions/4083372/in-javascript-jquery-what-is-the-best-way-to-convert-a-number-with-a-comma-into
+                thisPopulation = parseInt(thisPopulationParagraph.replace(/,/g, ''), 10);
+                if (tdIndex > 0) noEntriesFlag = false; // only count entries after the Year column
+              }
+
+              line = line + thisPopulation;
+
+              if(tdIndex+1 < tdArray.length){
+                line = line + ",";
+              }
+
+              console.log(thisPopulationParagraph, thisPopulation);
             });
-			
-			saveToFile(["Hello World"],"test.txt")
+
+            if (noEntriesFlag==false) output.push(line);  //If the noEntriesFlag is still up, there is no need to push a blank line into the data
+
+          });
+
+			saveToFile(output,"data.csv");
+      // console.log(rowsArray);
+
         },
         error: function() {
             return console.log("error");
