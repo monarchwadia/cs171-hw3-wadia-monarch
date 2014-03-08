@@ -11,3 +11,7 @@
 
 
   2. Take a look at the DOM tree for the Wikipedia table. Formulate in jQuery selector syntax the selection that would give you the DOM element for the second row in the Wikipedia table. Write down in selection syntax how you would get all table rows that are not the header row.
+    * Selection for the second row in the Wikipedia table (the one right after the "Headers"):
+      *  $(".wikitable tr:nth-child(2)")
+    * All table rows that are not the header row
+      *  $(".wikitable tr + tr")
