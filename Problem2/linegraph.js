@@ -31,9 +31,10 @@
         });
 
 
-    d3.csv("timeline.csv", function(data) {
+    d3.csv("../data.csv", function(data) {
 
-        // convert your csv data and add it to dataSet
+        dataSet = data;
+        console.log(dataSet);
 
         return createVis();
     });
@@ -41,7 +42,8 @@
     createVis = function() {
         var xAxis, xScale, yAxis,  yScale;
 
-          xScale = d3.scale.linear().domain([0,100]).range([0, bbVis.w]);  // define the right domain generically
+          xScale = d3.scale.linear().domain([0,100]).range([0, bbVis.w]);   // define the right domain generically. TODO: get time
+          yScale = d3.scale.linear().domain([0,100]).range(0, bbVis.h]);    // define the 
 
 		  // example that translates to the bottom left of our vis space:
 		  var visFrame = svg.append("g").attr({
