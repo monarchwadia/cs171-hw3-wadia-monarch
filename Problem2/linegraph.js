@@ -28,7 +28,7 @@
         height: height + margin.top + margin.bottom
     }).append("g").attr({
             transform: "translate(" + margin.left + "," + margin.top + ")"
-        });
+    });
 
 
     d3.csv("../data.csv", function(data) {
@@ -39,10 +39,11 @@
         return createVis();
     });
 
-    createVis = function() {
-        var xAxis, xScale, yAxis,  yScale;
+        var xAxis, xScale, yAxis,  yScale, line_PopulationBureau;
         var allPopulationPoints = [];
         var allYears = [];
+        var dataSet_PopulationBureau;
+    createVis = function() {
 
         // determine maximum and minimum populations
 
@@ -53,17 +54,24 @@
         // determine maximum and minimum dates
 
         dataSet.forEach(function(d){ allYears.push(d.year)});
+        var maximumYear = d3.max(allYears, function(d){if(d!="") return +d});
+        var minimumYear = d3.min(allYears, function(d){if(d!="") return +d});
+
+        /*
+        //THE d3.time.scale() IMPLEMENTATION:
         var maximumYear = new Date(Date.UTC(0,0,1)).setUTCFullYear( d3.max(allYears, function(d){if(d!="") return +d}));
         var minimumYear = new Date(Date.UTC(0,0,1)).setUTCFullYear( d3.min(allYears, function(d){if(d!="") return +d}));
+        xScale = d3.time.scale().........
+        */
 
         // create scales with minimum and maximum values
 
-        xScale = d3.time.scale()
+        xScale = d3.scale.linear()
             .domain([minimumYear, maximumYear])
             .range([0, bbVis.w]);
         yScale = d3.scale.linear()
-            .range([0, bbVis.h])
-            .domain([minimumPopulation, maximumPopulation]);
+            .domain([maximumPopulation, minimumPopulation])
+            .range([0, bbVis.h]);
 
         // create Axes with scales
         yAxis = d3.svg.axis()
@@ -72,6 +80,8 @@
         xAxis = d3.svg.axis()
             .scale(xScale)
             .orient("bottom");
+
+        //line function
 
 
 		// example that translates to the bottom left of our vis space:
@@ -106,7 +116,38 @@
             .style("text-anchor", "end")
             .text("Population");
 
+        line_PopulationBureau = d3.svg.line()
+            .x(function(d){return xScale(d.year)})
+            .y(function(d){return yScale(d.PopulationBureau)});
 
+
+
+        dataSet_PopulationBureau = [];
+        dataSet.forEach(function(d){
+            if(d.PopulationBureau!=""){ dataSet_PopulationBureau.push(d) }
+        });
+
+        console.log(dataSet_PopulationBureau);
+
+        var timelines = svg.selectAll(".timeline")
+            .data(dataSet_PopulationBureau)
+        .enter().append("g")
+            .attr("class", "timeline");
+
+        // line = d3.svg.line()
+        //     .interpolate("basis")
+        //     .x(function(d){return xScale(d)})
+        //     .y(function(d){return yScale(d)});
+
+
+
+        timelines.append("path")
+            .attr("class", "line PopulationBureau")
+            .attr("d", function(d, i){
+                return line_PopulationBureau(dataSet_PopulationBureau);
+            })
+            // .style("stroke", "red")
+            .attr("transform", "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")");
 
 
     };
