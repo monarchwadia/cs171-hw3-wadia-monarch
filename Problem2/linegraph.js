@@ -47,6 +47,9 @@
 
     createVis = function() {
 
+        //Create color scale
+        var color = d3.scale.category10();
+
         // determine maximum and minimum populations
 
         dataSet.forEach(function(d){allPopulationPoints.push(d.HYDE, d.Maddison, d.PopulationBureau, d.UN, d.USCensus)});
@@ -119,7 +122,24 @@
             .text("Population");
 
 
+
+
         for(columnName = 0; columnName <columnNames.length; columnName++){
+            svg.append("svg:defs").append("svg:marker")
+                .attr("id", "circleMarker")
+                .attr("viewBox", "0 0 12 12")
+                .attr("refX", "5")
+                .attr("refY", "5")
+                .attr("markerWidth", "3")
+                .attr("markerHeight", "3")
+                // .attr("class", columnName[columnNames])
+            .append("circle")
+                .attr("cx", "6")
+                .attr("cy", "6")
+                .attr("r", "6")
+                .style("fill", "none")
+                .style("stroke", color(columnName-1));
+
             eval(' \
             line_'+columnNames[columnName]+' = d3.svg.line()\
                 .x(function(d){return xScale(d.year)})\
@@ -137,8 +157,16 @@
                 .attr("d", function(d, i){\
                     return line_'+columnNames[columnName]+'(dataSet_'+columnNames[columnName]+');\
                 })\
-                .attr("transform", "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")");\
-        ')}
+                .attr("transform", "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")")\
+                .attr("marker-start", "url(#circleMarker)")\
+                .attr("marker-mid", "url(#circleMarker)")\
+                .attr("marker-end", "url(#circleMarker)")\
+                .style("fill", "none")\
+                .style("stroke", color(columnName))\
+                ;');
+        };
+
+
 
 
     };
