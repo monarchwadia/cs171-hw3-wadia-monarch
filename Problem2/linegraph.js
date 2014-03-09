@@ -43,6 +43,8 @@
         var allPopulationPoints = [];
         var allYears = [];
         var dataSet_PopulationBureau;
+        columnNames = ["HYDE", "Maddison", "PopulationBureau", "UN", "USCensus"];
+
     createVis = function() {
 
         // determine maximum and minimum populations
@@ -116,38 +118,27 @@
             .style("text-anchor", "end")
             .text("Population");
 
-        line_PopulationBureau = d3.svg.line()
-            .x(function(d){return xScale(d.year)})
-            .y(function(d){return yScale(d.PopulationBureau)});
 
-
-
-        dataSet_PopulationBureau = [];
-        dataSet.forEach(function(d){
-            if(d.PopulationBureau!=""){ dataSet_PopulationBureau.push(d) }
-        });
-
-        console.log(dataSet_PopulationBureau);
-
-        var timelines = svg.selectAll(".timeline")
-            .data(dataSet_PopulationBureau)
-        .enter().append("g")
-            .attr("class", "timeline");
-
-        // line = d3.svg.line()
-        //     .interpolate("basis")
-        //     .x(function(d){return xScale(d)})
-        //     .y(function(d){return yScale(d)});
-
-
-
-        timelines.append("path")
-            .attr("class", "line PopulationBureau")
-            .attr("d", function(d, i){
-                return line_PopulationBureau(dataSet_PopulationBureau);
-            })
-            // .style("stroke", "red")
-            .attr("transform", "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")");
+        for(columnName = 0; columnName <columnNames.length; columnName++){
+            eval(' \
+            line_'+columnNames[columnName]+' = d3.svg.line()\
+                .x(function(d){return xScale(d.year)})\
+                .y(function(d){return yScale(d.'+columnNames[columnName]+')});\
+            dataSet_'+columnNames[columnName]+' = [];\
+            dataSet.forEach(function(d){\
+                if(d.'+columnNames[columnName]+'!=""){ dataSet_'+columnNames[columnName]+'.push(d) };\
+            });\
+            var timeline_'+columnNames[columnName]+' = svg.selectAll(".'+columnNames[columnName]+'")\
+                .data(dataSet_'+columnNames[columnName]+')\
+            .enter().append("g")\
+                .attr("class", "timeline");\
+            timeline_'+columnNames[columnName]+'.append("path")\
+                .attr("class", "line '+columnNames[columnName]+'")\
+                .attr("d", function(d, i){\
+                    return line_'+columnNames[columnName]+'(dataSet_'+columnNames[columnName]+');\
+                })\
+                .attr("transform", "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")");\
+        ')}
 
 
     };
