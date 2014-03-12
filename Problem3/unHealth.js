@@ -57,8 +57,9 @@ svg = d3.select("#visUN").append("svg").attr({
     });
 
 
-d3.select("html").append("h1").text("Major Events");
-var event1 = d3.select("html").append("div");
+var explanation = d3.select("html").append("div")
+explanation.append("h1").text("Major Events");
+var event1 = explanation.append("div");
 event1.append("h2").text(" Feb 8, 2012: Women's Heart Disease Prevention -").style({"color": "black", cursor:"pointer"});
 event1.append("p").style({"color": "black", cursor:"pointer"}).text("As part of American Heart Month, on Wednesday, Feb. 8, 2012, the National Heart, Lung, and Blood Institute's (NHLBI's) The Heart Truth campaign, with the support of the Foundation for the National Institutes of Health (FNIH), will showcase its signature event, the Red Dress Collection 2012 at Mercedes-Benz Fashion Week in New York City. As part of its 10th anniversary this year, The Heart Truth has partnered with Million Hearts, a national initiative of the U.S. Department of Health and Human Services, to prevent one million heart attacks and strokes over the next five years.");
 event1.on("click", function(){
@@ -67,13 +68,13 @@ event1.on("click", function(){
 
 
 
-var event2 = d3.select("html").append("div");
+var event2 = explanation.append("div");
 event2.append("h2").text("July 31, 2012:  Health care law gives free preventive services to 47 million women").style({"color": "black", cursor:"pointer"});
 event2.append("p").style({"color": "black", cursor:"pointer"}).text("Previously some insurance companies did not cover these preventive services for women at all under their health plans, while some women had to pay deductibles or copays for the care they needed to stay healthy. The new rules in the health care law requiring coverage of these services take effect at the next renewal date – on or after Aug. 1, 2012—for most health insurance plans. For the first time ever, women will have access to even more life-saving preventive care free of charge.");
 event2.on("click", function(){
     goToEvent("June 21, 2012", "Aug 30, 2012")
 });
-
+// explanation.style("padding-top", margin.top+"px")
 
 
 
@@ -123,7 +124,15 @@ function createVis(){
 
 
 
-    brush = d3.svg.brush().x(xScaleOverview).on("brush", doBrush);
+    brush = d3.svg.brush().x(xScaleOverview)
+    .on("brush", function(){
+            if(brush.empty()==true){
+        console.log("OK");
+        doBrushEmpty();
+    } else {
+        doBrush();
+    }
+    });
 
 
 
@@ -297,6 +306,7 @@ function drawDetail(){
 }
 
  function doBrush(){
+
     leftScale = brush.extent()[0];
     rightScale = brush.extent()[1];
     xScaleDetail
@@ -337,10 +347,55 @@ function drawDetail(){
 
  }
 
+  function doBrushEmpty(){
+
+    leftScale = dataSetDatesMin;
+    rightScale = dataSetDatesMax;
+
+    xScaleDetail
+        .domain([leftScale, rightScale])
+        .clamp(true);
+
+    d3.select("#detailArea")
+        .attr("d", detailLine(dataSet))
+        .attr("transform", null)
+    .transition()
+        .ease("linear");
+
+    d3.selectAll(".detail.dots")
+        .attr("cx", function(d,i){return xScaleDetail(new Date(d["Analysis Date"]))})
+        .attr("transform", null)
+    .transition()
+        .ease("linear")
+
+    d3.select("#detailAxis")
+        .call(xAxisDetail)
+        .attr("transform", null)
+        .attr("transform", "translate(0, "+(bbDetail.y + bbDetail.h + margin.top)+")")
+    .transition()
+        .ease("linear")
+
+
+
+
+  //   drawDetail(brush.extent());
+
+  //   dataSet = dataSet.map(function(d,i){if(i<5){return d}})
+  //   detailGraph.select("g")
+  //   .attr("d", detailLine(dataSet))
+  //   .attr("transform", null)
+  // .transition()
+  //   .ease("linear")
+
+
+ }
+
  function goToEvent(date1, date2){
+    console.log("trigger");
     x = new Date(date1);
     y = new Date(date2);
     brush.extent([x, y]);
     d3.selectAll(".brush").call(brush);
     doBrush();
+
  }
