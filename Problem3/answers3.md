@@ -3,7 +3,7 @@
 2. Name the HTML element (type and class) that is used for representing the selection.
   * The selection area is also represented by "rect", of class "extent", and cursor is set to "move". This element's visibility is set to "visible"
 3. What are the other DOM elements for?
-The elements can be represented as follows:
+ * The elements can be represented as follows:
 ```
   * <g class="brush"> - this is the container element for the brush. the "pointer event" changes to "none" on mousedown and "all" on mouseup, preventing any inadvertant drag-highlighting by the user. The opacity is set to 0 to make this "invisible"
     * <rect class="background"> - this is a mouse-interactive element that allows us to click and drag the brush, resizing it to suit our needs.
