@@ -50,9 +50,31 @@ dataSet = [];
 svg = d3.select("#visUN").append("svg").attr({
     width: width + margin.left + margin.right,
     height: height + margin.top + margin.bottom
+}).style({
+    float: "left"
 }).append("g").attr({
         transform: "translate(" + margin.left + "," + 0 + ")"
     });
+
+
+d3.select("html").append("h1").text("Major Events");
+var event1 = d3.select("html").append("div");
+event1.append("h2").text(" Feb 8, 2012: Women's Heart Disease Prevention -").style({"color": "black", cursor:"pointer"});
+event1.append("p").style({"color": "black", cursor:"pointer"}).text("As part of American Heart Month, on Wednesday, Feb. 8, 2012, the National Heart, Lung, and Blood Institute's (NHLBI's) The Heart Truth campaign, with the support of the Foundation for the National Institutes of Health (FNIH), will showcase its signature event, the Red Dress Collection 2012 at Mercedes-Benz Fashion Week in New York City. As part of its 10th anniversary this year, The Heart Truth has partnered with Million Hearts, a national initiative of the U.S. Department of Health and Human Services, to prevent one million heart attacks and strokes over the next five years.");
+event1.on("click", function(){
+    goToEvent("Nov 23, 2011", "Apr 25, 2012")
+});
+
+
+
+var event2 = d3.select("html").append("div");
+event2.append("h2").text("July 31, 2012:  Health care law gives free preventive services to 47 million women").style({"color": "black", cursor:"pointer"});
+event2.append("p").style({"color": "black", cursor:"pointer"}).text("Previously some insurance companies did not cover these preventive services for women at all under their health plans, while some women had to pay deductibles or copays for the care they needed to stay healthy. The new rules in the health care law requiring coverage of these services take effect at the next renewal date – on or after Aug. 1, 2012—for most health insurance plans. For the first time ever, women will have access to even more life-saving preventive care free of charge.");
+event2.on("click", function(){
+    goToEvent("June 21, 2012", "Aug 30, 2012")
+});
+
+
 
 
 
@@ -313,4 +335,12 @@ function drawDetail(){
   //   .ease("linear")
 
 
+ }
+
+ function goToEvent(date1, date2){
+    x = new Date(date1);
+    y = new Date(date2);
+    brush.extent([x, y]);
+    d3.selectAll(".brush").call(brush);
+    doBrush();
  }
