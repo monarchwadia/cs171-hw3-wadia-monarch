@@ -138,21 +138,8 @@ function createVis(){
         .tickPadding(8);
 
 
+    brush = d3.svg.brush().x(xScale).on("brush", brush);
 
-    svg.append("svg:defs").append("svg:marker")
-        .attr("id", "circleMarker")
-        .attr("viewBox", "-20 -20 50 50")
-        .attr("refX", "5")
-        .attr("refY", "5")
-        .attr("markerWidth", "4")
-        .attr("markerHeight", "4")
-        .append("circle")
-        .attr("cx", "6")
-        .attr("cy", "6")
-        .attr("r", "20")
-        .style("stroke-width", "1")
-        .style("fill", "blue")
-        .style("stroke", "blue");
 
     //Drawing Axes
     detailGraph.append("g")
@@ -207,7 +194,17 @@ function createVis(){
         .attr("cy", function(d,i){return yScaleDetail(d["Women's Health"])})
         .attr("r", 2)
         .style("fill", "navy")
-        .style("stroke", "navy")
+        .style("stroke", "navy");
 
+    detailGraph.append("g").attr("class", "brush").call(brush)
+        .selectAll("rect").attr({
+            height: bbOverview.h + margin.top,
+            transform: "translate(0, "+ (-margin.top) +")"
+        })
+
+
+ }
+
+ function brush(){
 
  }
