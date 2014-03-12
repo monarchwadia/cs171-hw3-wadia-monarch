@@ -2,7 +2,7 @@ var convertToInt;
 convertToInt = function(s) {
     return parseInt(s.replace(/,/g, ""), 10);
 };
-
+var x;
 
 var bbDetail, bbOverview, dataSet, detaSetNoHeader, svg, detailGraph, overviewGraph, dataSetDates, dataSetWomensHealth;
 var yScaleDetail,
@@ -91,9 +91,10 @@ function createVis(){
     xScaleOverview = d3.time.scale()
         // .domain([0, dataSetDates.length])
         .domain([dataSetDatesMin, dataSetDatesMax])
-        .range([0, width]);
+        .range([0, width])
+        .clamp(true);
     overviewLine = d3.svg.line()
-        .x(function(d,i){var object; console.log(object = new Date(d["Analysis Date"])); return xScaleOverview(object)})
+        .x(function(d,i){var object; object = new Date(d["Analysis Date"]); return xScaleOverview(object)})
         .y(function(d,i){return yScaleOverview(parseInt(d["Women's Health"]))});
 
 
@@ -117,7 +118,7 @@ function createVis(){
         .scale(yScaleOverview)
         .orient("left")
         .ticks(3)
-        .tickSize(0)
+        .tickSize(-width)
         .tickPadding(8);
 
     overviewGraph.append("g")
@@ -136,11 +137,11 @@ function createVis(){
         .attr("d", overviewLine(dataSet))
         .attr("id", "overviewLine");
 
-    overviewGraph.selectAll(".dots")
+    overviewGraph.selectAll(".overview .dots")
         .data(dataSet)
         .enter()
     .append("circle")
-        .attr("class", "dot")
+        .attr("class", "overview dots")
         .attr("cx", function(d,i){return xScaleOverview(new Date(d["Analysis Date"]))})
         .attr("cy", function(d,i){return yScaleOverview(d["Women's Health"])})
         .attr("r", 2)
@@ -154,19 +155,69 @@ function drawDetail(){
     if (detailGraph) {
         detailGraph.remove();
     }
+    
+    dataSetParameter = dataSet;
+
+    // startDate = new Date(brushEvent[0]);
+    // startYear = startDate.getUTCFullYear();
+    // startMonth = startDate.getUTCMonth();
+    // startDate = startDate.getUTCDate();
+    // startFlag = false;
+    // endDate = new Date(brushEvent[1]);
+    // endYear = endDate.getUTCFullYear();
+    // endMonth = endDate.getUTCMonth();
+    // endDate = endDate.getUTCDate();
+    // endFlag = false;
+
+    // for(d=0; d<dataSet.length; d++){
+    //     var thisDate = new Date(dataSet[d]["Analysis Date"]);
+    //     thisYear = thisDate.getUTCFullYear();
+    //     thisMonth = thisDate.getUTCMonth();
+    //     thisDate = thisDate.getUTCDate();
+    //     if(startYear == thisYear && startMonth == thisMonth && startDate == thisDate){
+    //         startFlag = true;
+    //     }
+    //     if(endYear == thisYear && endMonth == thisMonth && endDate == thisDate){
+    //         endFlag = true;
+    //     }
+
+    //     if(startFlag == true){
+    //         dataSetParameter.push(dataSet[d]);
+    //         if(endFlag == true){
+
+    //         }
+    //     }
+
+
+    // };
+
+
+    dataSetDatesP = dataSetParameter.map(function(d,i){
+        var object = new Date(d["Analysis Date"]);
+        return object;
+    });
+    dataSetWomensHealthP = dataSetParameter.map(function(d,i){
+        var object = parseInt(d["Women's Health"]);
+        return object;
+    });
+
+    dataSetDatesMinP = d3.min(dataSetDatesP);
+    dataSetDatesMaxP = d3.max(dataSetDatesP);
+    dataWomensHealthMinP = d3.min(dataSetWomensHealthP);
+    dataWomensHealthMaxP = d3.max(dataSetWomensHealthP);
 
     detailGraph = svg.append("g").attr({
         transform: "translate(" + bbDetail.x + "," + bbDetail.y + ")"
     });
-    
+
     xScaleDetail = d3.time.scale()
-        .domain([dataSetDatesMin, dataSetDatesMax])
+        .domain([dataSetDatesMinP, dataSetDatesMaxP])
         .range([0, width]);
     yScaleDetail = d3.scale.linear()
-        .domain([0, dataWomensHealthMax])
+        .domain([0, dataWomensHealthMaxP])
         .range([bbDetail.y + bbDetail.h + margin.top, bbOverview.y + bbOverview.h + 30]);
     detailLine = d3.svg.area()
-        .x(function(d,i){var object; console.log(object = new Date(d["Analysis Date"])); return xScaleDetail(object)})
+        .x(function(d,i){var object; object = new Date(d["Analysis Date"]); return xScaleDetail(object)})
         .y1(function(d,i){return yScaleDetail(parseInt(d["Women's Health"]))})
         .y0(bbDetail.y + bbDetail.h + margin.top);
 
@@ -175,8 +226,8 @@ function drawDetail(){
     xAxisDetail = d3.svg.axis()
         .scale(xScaleDetail)
         .orient("bottom")
-        .ticks(d3.time.months, 3)
-        // .tickFormat(d3.time.format('%a %d'))
+        // .ticks(d3.time.months, 3)
+        // .tickFormat(d3.time.format('%m %y'))
         .tickSize(0)
         .tickPadding(8);
 
@@ -184,7 +235,7 @@ function drawDetail(){
         .scale(yScaleDetail)
         .orient("left")
         .ticks(5)
-        .tickSize(0)
+        .tickSize(-width)
         .tickPadding(8);   
 
     detailGraph.append("g")
@@ -192,19 +243,20 @@ function drawDetail(){
         .attr("id", "detailAxis")
         .attr("transform", "translate(0, "+(bbDetail.y + bbDetail.h + margin.top)+")")
         .call(xAxisDetail);
+
     detailGraph.append("g")
         .attr("class", "y axis")
         .attr("id", "overviewAxisY")
         .call(yAxisDetail);
     detailGraph.append("svg:path")
-        .attr("d", detailLine(dataSet))
+        .attr("d", detailLine(dataSetParameter))
         .attr("id", "detailArea");        
 
     detailGraph.selectAll(".dots")
-        .data(dataSet)
+        .data(dataSetParameter)
         .enter()
     .append("circle")
-        .attr("class", "dot")
+        .attr("class", "detail dots")
         .attr("cx", function(d,i){return xScaleDetail(new Date(d["Analysis Date"]))})
         .attr("cy", function(d,i){return yScaleDetail(d["Women's Health"])})
         .attr("r", 2)
@@ -221,7 +273,44 @@ function drawDetail(){
             transform: "translate(0, "+ (-margin.top) +")"
         })
 }
- function doBrush(e){
-    console.log(brush.extent());
+
+ function doBrush(){
+    leftScale = brush.extent()[0];
+    rightScale = brush.extent()[1];
+    xScaleDetail
+        .domain([leftScale, rightScale])
+        .clamp(true);
+
+    d3.select("#detailArea")
+        .attr("d", detailLine(dataSet))
+        .attr("transform", null)
+    .transition()
+        .ease("linear");
+
+    d3.selectAll(".detail.dots")
+        .attr("cx", function(d,i){return xScaleDetail(new Date(d["Analysis Date"]))})
+        .attr("transform", null)
+    .transition()
+        .ease("linear")
+
+    d3.select("#detailAxis")
+        .call(xAxisDetail)
+        .attr("transform", null)
+        .attr("transform", "translate(0, "+(bbDetail.y + bbDetail.h + margin.top)+")")
+    .transition()
+        .ease("linear")
+
+
+
+
+  //   drawDetail(brush.extent());
+
+  //   dataSet = dataSet.map(function(d,i){if(i<5){return d}})
+  //   detailGraph.select("g")
+  //   .attr("d", detailLine(dataSet))
+  //   .attr("transform", null)
+  // .transition()
+  //   .ease("linear")
+
 
  }
