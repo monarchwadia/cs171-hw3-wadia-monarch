@@ -20,7 +20,7 @@ var margin = {
     top: 50,
     right: 50,
     bottom: 50,
-    left: 50
+    left: 100
 };
 var width = 960 - margin.left - margin.right;
 
@@ -89,12 +89,12 @@ function createVis(){
     console.log(dataSet);
     // console.log(dataWomensHealthMin, dataWomensHealthMax);
     yScaleOverview = d3.scale.linear()
-        .domain([dataWomensHealthMin, dataWomensHealthMax])
-        .range([bbOverview.y + bbOverview.h + margin.top, 0 + margin.top + bbOverview.h]);
+        .domain([0, dataWomensHealthMax])
+        .range([bbOverview.y + bbOverview.h + margin.top, 0 + margin.top]);
 
     yScaleDetail = d3.scale.linear()
-        .domain([dataWomensHealthMin, dataWomensHealthMax])
-        .range([bbDetail.y + bbDetail.h + margin.top, 0 + margin.top + bbDetail.h]);
+        .domain([0, dataWomensHealthMax])
+        .range([bbDetail.y + bbDetail.h + margin.top, bbOverview.y + bbOverview.h + 30]);
         // .range([ bbDetail.y, bbDetail.h + (-bbOverview.h) + (-bbDetail.y)]);
 
     xScale = d3.time.scale()
@@ -106,39 +106,108 @@ function createVis(){
         .x(function(d,i){var object; console.log(object = new Date(dataSet[i]["Analysis Date"])); return xScale(object)})
         .y(function(d,i){return yScaleOverview(parseInt(dataSet[i]["Women's Health"]))})
 
-    detailLine = d3.svg.line()
+    detailLine = d3.svg.area()
         .x(function(d,i){var object; console.log(object = new Date(dataSet[i]["Analysis Date"])); return xScale(object)})
-        .y(function(d,i){return yScaleDetail(parseInt(dataSet[i]["Women's Health"]))})
+        .y1(function(d,i){return yScaleDetail(parseInt(dataSet[i]["Women's Health"]))})
+        .y0(bbDetail.y + bbDetail.h + margin.top)
+    // .y1(function(d) { return y(d.y); });
 
 
 
-    overviewGraph.append("svg:path")
-        .attr("d", overviewLine(dataSetWomensHealth))
-        .attr("id", "overviewLine");
-    detailGraph.append("svg:path")
-        .attr("d", detailLine(dataSetWomensHealth))
-        .attr("id", "overviewLine");
+
+    yAxisOverview = d3.svg.axis()
+        .scale(yScaleOverview)
+        .orient("left")
+        .ticks(3)
+        .tickSize(0)
+        .tickPadding(8);
 
     yAxisDetail = d3.svg.axis()
         .scale(yScaleDetail)
-        .orient("left");
+        .orient("left")
+        .ticks(5)
+        .tickSize(0)
+        .tickPadding(8);
 
     xAxis = d3.svg.axis()
         .scale(xScale)
         .orient("bottom")
         .ticks(d3.time.months, 3)
+        // .tickFormat(d3.time.format('%a %d'))
         .tickSize(0)
-        .tickPadding(8);;
+        .tickPadding(8);
 
+
+
+    svg.append("svg:defs").append("svg:marker")
+        .attr("id", "circleMarker")
+        .attr("viewBox", "-20 -20 50 50")
+        .attr("refX", "5")
+        .attr("refY", "5")
+        .attr("markerWidth", "4")
+        .attr("markerHeight", "4")
+        .append("circle")
+        .attr("cx", "6")
+        .attr("cy", "6")
+        .attr("r", "20")
+        .style("stroke-width", "1")
+        .style("fill", "blue")
+        .style("stroke", "blue");
+
+    //Drawing Axes
     detailGraph.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0, "+bbDetail.h+")")
-        .call(xAxis)
-        .append("text")
-        .attr("y", 25)
-        .attr("x", width/2)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Year");
+        .attr("id", "detailAxis")
+        .attr("transform", "translate(0, "+(bbDetail.y + bbDetail.h + margin.top)+")")
+        .call(xAxis);
+
+    overviewGraph.append("g")
+        .attr("class", "x axis")
+        .attr("id", "overviewAxis")
+        .attr("transform", "translate(0, "+(bbOverview.y + bbOverview.h + margin.top)+")")
+        .call(xAxis);
+
+    overviewGraph.append("g")
+        .attr("class", "y axis")
+        .attr("id", "overviewAxisY")
+        .call(yAxisOverview);
+
+    detailGraph.append("g")
+        .attr("class", "y axis")
+        .attr("id", "overviewAxisY")
+        .call(yAxisDetail);
+
+
+    overviewGraph.append("svg:path")
+        .attr("d", overviewLine(dataSetWomensHealth))
+        .attr("id", "overviewLine");
+
+    detailGraph.append("svg:path")
+        .attr("d", detailLine(dataSetWomensHealth))
+        .attr("id", "detailArea");        
+
+
+    overviewGraph.selectAll(".dots")
+        .data(dataSet)
+        .enter()
+    .append("circle")
+        .attr("class", "dot")
+        .attr("cx", function(d,i){return xScale(new Date(d["Analysis Date"]))})
+        .attr("cy", function(d,i){return yScaleOverview(d["Women's Health"])})
+        .attr("r", 2)
+        .style("fill", "navy")
+        .style("stroke", "navy")
+
+    detailGraph.selectAll(".dots")
+        .data(dataSet)
+        .enter()
+    .append("circle")
+        .attr("class", "dot")
+        .attr("cx", function(d,i){return xScale(new Date(d["Analysis Date"]))})
+        .attr("cy", function(d,i){return yScaleDetail(d["Women's Health"])})
+        .attr("r", 2)
+        .style("fill", "navy")
+        .style("stroke", "navy")
+
 
  }
