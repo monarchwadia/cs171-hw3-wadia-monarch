@@ -32,6 +32,8 @@
 
         var brush;
 
+        var table = d3.select("table");
+
         margin = {
             top: 50,
             right: 50,
@@ -145,8 +147,7 @@
             .y(yScale)
             .on("brush", function(){
                 if(brush.empty()==true){
-                    console.log("OK");
-                    doBrushEmpty();
+                    
                 } else {
                     doBrush();
                 }
@@ -194,22 +195,47 @@
                 if(returnObject["year"]) selectionObject.push(returnObject);
 
             });
-            console.log(selectionObject);
+            createTable(selectionObject);
                 
 
+        }
 
-            //     //         returnObject.push(this);
+        function createTable(selectionObject) {
+            table.html("");
+            table.append("thead").append("th").text("Date");
+            table.select("thead")
+                .selectAll("th")
+                .data(columnNames)
+                .enter()
+                    .append("th")
+                    .text(function(d,i){return d});
 
-            //     //         console.log(d3.select(this))
-            //     //         // var tempObject = { population : d[columnNames[x]], column: columnNames[x], "year" : d["year"]};
-            //     //         // if(d["interpolated"+columnNames[x]]){ tempObject["interpolated"+columnNames[x]] = d["interpolated"+columnNames[x]]};
-            //     //         // returnObject.push(tempObject);
-            //     //     }
+            rows = table.append("tbody")
+                .selectAll("tr")
+                .data(selectionObject)
+                .enter()    
+                    .append("tr")
+            dates = rows.selectAll("td")
+                    .append("td")
+                        .data(selectionObject)
+                        .enter()
+                        .append("p")
+                            .text(function(d){return d["year"].getUTCFullYear()})
 
-            //     // }
-                
-            // });
-            // console.log(returnObject);
+            cells = rows.selectAll("td")
+                .data(function(row){
+                    return columnNames.map(function(column){
+                        return {column: column, value:row[column]}
+                    })
+                })
+                .enter()
+            .append("td")
+                .text(function(cell){
+                    
+                        return cell.value;
+                    
+                });
+                        
         }
 
 
