@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="../libs/d3.v3.min.js"></script>
+    <style>
+        .axis path,
+        .axis line {
+                fill: none;
+                stroke: lightgrey;
+                shape-rendering:crispEdges;
+            }
+
+        .dataArea {
+            stroke: 1px steelblue;
+            fill:steelblue;
+            fill-opacity:0.5;
+            clip-path: url(#clip);
+        }
+    
+        .brush .extent {
+            stroke: black;
+            fill-opacity: 0.125;
+            shape-rendering: crispEdges; }
+
+        .brush .handle {
+            stroke: black;
+            fill-opacity: 0.125; }
+
+
+
+    </style>
+
+</head>
+<body>
+    <div id="vis"></div>
+
+
+    <script src="differenceGraph.js">
+
+	</script>
+
+
+</body>
+</html>

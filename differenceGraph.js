@@ -30,6 +30,8 @@
 
         var indexPairs = [];
 
+        var brush;
+
         margin = {
             top: 50,
             right: 50,
@@ -56,6 +58,8 @@
         }).append("g").attr({
                     transform: "translate(" + margin.left + "," + margin.top + ")"
                 });
+
+
 
 
         d3.csv("../data.csv", function(data) {
@@ -136,9 +140,77 @@
                     .style("text-anchor", "end")
                     .text("Population");
 
+            brush = d3.svg.brush()
+            .x(xScale)
+            .y(yScale)
+            .on("brush", function(){
+                if(brush.empty()==true){
+                    console.log("OK");
+                    doBrushEmpty();
+                } else {
+                    doBrush();
+                }
+            });
+
+            svg.select("g").append("g").attr("class", "brush").call(brush)
+            .selectAll("rect").attr({
+                height: bbVis.h + margin.top,
+                transform: "translate("+0+","+ (margin.top-margin.bottom) +")"
+            });
+
             return createVis();
 
         });
+
+        function doBrush(){
+            var extent1 = brush.extent()[0];
+            var extent2 = brush.extent()[1];
+            leftB = extent1[0];
+            bottomB = extent1[1];
+            rightB = extent2[0];
+            topB = extent2[1];
+
+
+
+            // console.log(topB, leftB, rightB, bottomB);
+            // var returnObject = [];
+            // d3.selectAll("circle").filter(function(d,i){
+            selectionObject = [];
+            dataSet.forEach(function(d,i){
+                // console.log(d);
+                var selections = [];
+                for(x=0; x<columnNames.length; x++){
+                    if((d[columnNames[x]] <= topB && d[columnNames[x]] >= bottomB) 
+                        && (+d["year"] >=leftB && +d["year"] <= rightB)) {
+                        selections.push(columnNames[x])
+                    }
+                }
+                returnObject = {};
+                for(x=0; x<selections.length; x++){
+                    returnObject[selections[x]] = d[selections[x]];
+                    returnObject["year"] = d["year"];
+                    if(d["interpolated"+selections[x]]){ returnObject["interpolated"+selections[x]] = d["interpolated"+selections[x]]};
+                }
+                if(returnObject["year"]) selectionObject.push(returnObject);
+
+            });
+            console.log(selectionObject);
+                
+
+
+            //     //         returnObject.push(this);
+
+            //     //         console.log(d3.select(this))
+            //     //         // var tempObject = { population : d[columnNames[x]], column: columnNames[x], "year" : d["year"]};
+            //     //         // if(d["interpolated"+columnNames[x]]){ tempObject["interpolated"+columnNames[x]] = d["interpolated"+columnNames[x]]};
+            //     //         // returnObject.push(tempObject);
+            //     //     }
+
+            //     // }
+                
+            // });
+            // console.log(returnObject);
+        }
 
 
         createVis = function() {
