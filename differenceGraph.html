@@ -4,6 +4,9 @@
     <title></title>
     <script src="../libs/d3.v3.min.js"></script>
     <style>
+    #vis {
+        float:left;
+    }
         .axis path,
         .axis line {
                 fill: none;
@@ -26,7 +29,16 @@
         .brush .handle {
             stroke: black;
             fill-opacity: 0.125; }
-
+/* Generic Table
+---------------------------------------------------------- */
+#tablediv { overflow-y: scroll; height: 700px; float:left; width:30%;}
+table {  text-align: center; width: 100%; margin:20px 0; border-collapse:collapse; border-top:1px solid #ddd; border-left:1px solid #ddd; }
+table .heading { background:#666; color:#fff; text-transform:uppercase; text-align:center; }
+table th,
+table td { border-bottom:1px solid #ddd; border-right:1px solid #ddd; }
+table th { font-weight:bold; }
+table tr:nth-of-type(even) { background:#eee; }
+table .hover { background:#ccc; }
 
 
     </style>
@@ -34,7 +46,9 @@
 </head>
 <body>
     <div id="vis"></div>
+    <div id="tablediv">
     <table id="table"></table>
+</div>
 
 
     <script src="differenceGraph.js">

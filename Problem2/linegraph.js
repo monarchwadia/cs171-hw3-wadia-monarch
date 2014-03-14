@@ -57,6 +57,8 @@
                     transform: "translate(" + margin.left + "," + margin.top + ")"
                 });
 
+        // d3.select("#tablediv").attr({max-height: 600px});
+
 
         d3.csv("../data.csv", function(data) {
 
@@ -85,8 +87,8 @@
             xScale = d3.time.scale()
                     .domain([minimumYear, maximumYear])
                     .range([0, bbVis.w]);
-            yScale = d3.scale.log()
-                    .domain([maximumPopulation, minimumPopulation])
+            yScale = d3.scale.linear()
+                    .domain([maximumPopulation, 0])
                     .range([0, bbVis.h]);
             // create Axes with scales
             yAxis = d3.svg.axis()

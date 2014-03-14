@@ -11,6 +11,7 @@
         var interpolationColor = d3.scale.linear()
                                     .domain([-1, 0, 1])
                                     .range(["red", "white", "green"]);
+        var columnNames2 = ["USCensus","PopulationBureau","UN","HYDE","Maddison"]
         var maximumPopulation;
         var minimumPopulation;
         var maximumYear;
@@ -31,6 +32,11 @@
         var indexPairs = [];
 
         var brush;
+        var BFormat = function(x){
+            var billionsFormat = d3.format(".3s");
+            return billionsFormat(x).replace(/G/, 'B')
+        }
+        
 
         var table = d3.select("table");
 
@@ -41,7 +47,7 @@
             left: 50
         };
 
-        width = 1250 - margin.left - margin.right;
+        width = 900 - margin.left - margin.right;
 
         height = 700 - margin.bottom - margin.top;
 
@@ -67,13 +73,15 @@
         d3.csv("../data.csv", function(data) {
 
             dataSet = data;
-            dataSet.forEach(function(d){
+            dataSet.forEach(function(d, i){
                 if(d!="") d.year = new Date(new Date("Jan 1").setUTCFullYear(d.year));
+                d["thisindex"] = i;
 
             });
 
             columnNames = d3.map(dataSet[0]).keys();
-            columnNames.splice(columnNames.indexOf("year"), 1);
+            // columnNames.splice(columnNames.indexOf("year"), 1);
+            columnNames.splice(columnNames.indexOf("thisindex"), 1);
 
             dataSet.forEach(function(d){
                 allPopulationPoints.push(d.HYDE, d.Maddison, d.PopulationBureau, d.UN, d.USCensus);
@@ -88,28 +96,32 @@
 
             // create scales with minimum and maximum values
 
-            xScale = d3.time.scale()
-                    .domain([minimumYear, maximumYear])
+            xScale = d3.scale.linear()
+                    .domain([0,dataSet.length-1])
                     .range([0, bbVis.w]);
-            yScale = d3.scale.log()
+            yScale = d3.scale.linear()
                     .domain([maximumPopulation, minimumPopulation])
                     .range([0, bbVis.h]);
             // create Axes with scales
             yAxis = d3.svg.axis()
                     .scale(yScale)
                     .orient("left")
-                    .tickFormat(function(d){
-                        x = d3.format(".3s");
-                        return x(d).replace(/G/, 'B')
-                    });
+                    .ticks(dataSet.length-1)
+                    .tickSize(-bbVis.w)
+                    .tickFormat((function(d,i){
+                        if(i%2 == 0 || i==dataSet.length) {
+                         
+                        return BFormat(d);
+                        }
+                    }));
 
             xAxis = d3.svg.axis()
                     .scale(xScale)
                     .orient("bottom")
-                    .ticks(d3.time.years, 250)
+                    .ticks(dataSet.length-1)
                     .tickSize(-bbVis.h)
                     .tickFormat((function(d,i){
-                        return d.getUTCFullYear();
+                        if(i%4 == 0) return dataSet[i]["year"].getUTCFullYear();
                     }));
 
             //line function
@@ -120,6 +132,8 @@
                 "transform": "translate(" + bbVis.x + "," + (bbVis.y + bbVis.h) + ")",
                 "class": "estimates"
             });
+
+
 
             visFrame.append("g")
                     .attr("class", "x axis")
@@ -144,7 +158,7 @@
 
             brush = d3.svg.brush()
             .x(xScale)
-            .y(yScale)
+            // .y(yScale)
             .on("brush", function(){
                 if(brush.empty()==true){
                     
@@ -166,10 +180,12 @@
         function doBrush(){
             var extent1 = brush.extent()[0];
             var extent2 = brush.extent()[1];
-            leftB = extent1[0];
-            bottomB = extent1[1];
-            rightB = extent2[0];
-            topB = extent2[1];
+            // leftB = extent1[0];
+            // bottomB = extent1[1];
+            // rightB = extent2[0];
+            // topB = extent2[1];
+            leftB=extent1;
+            rightB=extent2;
 
 
 
@@ -181,68 +197,65 @@
                 // console.log(d);
                 var selections = [];
                 for(x=0; x<columnNames.length; x++){
-                    if((d[columnNames[x]] <= topB && d[columnNames[x]] >= bottomB) 
-                        && (+d["year"] >=leftB && +d["year"] <= rightB)) {
+                    if((1==1) 
+                        && (+d["thisindex"] >=leftB && +d["thisindex"] <= rightB)) {
                         selections.push(columnNames[x])
                     }
                 }
                 returnObject = {};
                 for(x=0; x<selections.length; x++){
                     returnObject[selections[x]] = d[selections[x]];
-                    returnObject["year"] = d["year"];
+                    returnObject["thisindex"] = d["thisindex"];
                     if(d["interpolated"+selections[x]]){ returnObject["interpolated"+selections[x]] = d["interpolated"+selections[x]]};
                 }
-                if(returnObject["year"]) selectionObject.push(returnObject);
+                if(returnObject["thisindex"]) selectionObject.push(returnObject);
 
             });
-            createTable(selectionObject);
+            // console.log(selectionObject);
+            createTable(selectionObject)
                 
 
         }
 
         function createTable(selectionObject) {
+
             table.html("");
-            table.append("thead").append("th").text("Date");
-            table.select("thead")
-                .selectAll("th")
-                .data(columnNames)
-                .enter()
-                    .append("th")
-                    .text(function(d,i){return d});
-
-            rows = table.append("tbody")
-                .selectAll("tr")
+            thead = table.append("thead");
+            thead.append("tr").html(function(){
+                        var returnString = "";
+                        columnNames.forEach(function(e,j){
+                             returnString += "<th>"+ e+"</th>";
+                        });
+                        return returnString;
+            })
+            tbody = table.append("tbody");
+            rows = tbody.selectAll("tr")
                 .data(selectionObject)
-                .enter()    
-                    .append("tr")
-            dates = rows.selectAll("td")
-                    .append("td")
-                        .data(selectionObject)
-                        .enter()
-                        .append("p")
-                            .text(function(d){return d["year"].getUTCFullYear()})
-
-            cells = rows.selectAll("td")
-                .data(function(row){
-                    return columnNames.map(function(column){
-                        return {column: column, value:row[column]}
-                    })
-                })
                 .enter()
-            .append("td")
-                .text(function(cell){
-                    
-                        return cell.value;
-                    
-                });
-                        
+                    .append("tr")
+                    .html(function(d,i){
+                        var returnString = "";
+                        columnNames.forEach(function(e,j){
+                            if(j==0){
+                                x = d[e].getUTCFullYear();
+                            } else {
+                            x = BFormat(Math.floor(d[e]) || "");
+                        }
+                            if(x == 0)x="";
+                             returnString += "<td>"+ x+"</td>";
+                        });
+                        return returnString;
+                    });
+
+
+
+       
         }
 
 
         createVis = function() {
 
-            
-                                
+                       
             columnNames.forEach(function(n){
 
                 theinterpolator[n] = d3.scale.linear();
@@ -254,10 +267,6 @@
                 endFlag[n] = d3.max(indexMap[n]);
 
                 indexPairs[n] = d3.pairs(indexMap[n]);
-
-
-
-
 
                 indexPairs[n].forEach(function(d,i){
                     if(d[1]-d[0]>1){
@@ -285,33 +294,26 @@
 
             
              
-            svg
-            .append("g")
-                .append("svg:path")
-                .attr("class", "path")
-                .attr("id", n)
-                .attr("d", lineFunction[n](dataSetExtract[n]))
-                .attr("stroke", color(n))
-                .attr("fill", "none")
-                .attr("transform", "translate(" + bbVis.x + "," + "0)");
+            // svg
+            // .append("g")
+            //     .append("svg:path")
+            //     .attr("class", "path")
+            //     .attr("id", n)
+            //     .attr("d", lineFunction[n](dataSetExtract[n]))
+            //     .attr("stroke", color(n))
+            //     .attr("fill", "none")
+            //     .attr("transform", "translate(" + bbVis.x + "," + "0)");
 
             svg.selectAll(".overview .dots")
                 .data(dataSetExtract[n])
                 .enter()
             .append("circle")
-                .attr("class", "overview dots")
-                .attr("cx", function(d,i){return xScale(d["year"])})
+                .attr("class", function(d,i){return "overview dots " + n + " " + d[n]})
+                .attr("cx", function(d,i){return xScale(d["thisindex"])})
                 .attr("cy", function(d,i){return yScale(d[n])})
                 .attr("transform", "translate(" + bbVis.x + "," + "0)")
                 .attr("r", 3)
-                .style("fill", function(d){
-                    if(d["interpolated"+n]) {
-                        return interpolationColor(-1)
-                    } else {
-                        return interpolationColor(1);
-                    }
-                    
-                })
+                .style("fill", color(n))
                 .attr("stroke", color(n))
             });
         };

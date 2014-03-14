@@ -56,6 +56,15 @@ svg = d3.select("#visUN").append("svg").attr({
         transform: "translate(" + margin.left + "," + 0 + ")"
     });
 
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width-3.2)
+    .attr("height", height)
+    .attr({
+        transform: "translate(" + 1.6 + "," + 0 + ")"
+    });
+
 
 var explanation = d3.select("html").append("div")
 explanation.append("h1").text("Major Events");
@@ -175,9 +184,9 @@ function createVis(){
         .attr("class", "overview dots")
         .attr("cx", function(d,i){return xScaleOverview(new Date(d["Analysis Date"]))})
         .attr("cy", function(d,i){return yScaleOverview(d["Women's Health"])})
-        .attr("r", 2)
-        .style("fill", "navy")
-        .style("stroke", "navy");
+        .attr("r", 1.5)
+        .style("fill", "black")
+        // .style("stroke", "navy");
 
         drawDetail();
  }
@@ -290,9 +299,9 @@ function drawDetail(){
         .attr("class", "detail dots")
         .attr("cx", function(d,i){return xScaleDetail(new Date(d["Analysis Date"]))})
         .attr("cy", function(d,i){return yScaleDetail(d["Women's Health"])})
-        .attr("r", 2)
-        .style("fill", "navy")
-        .style("stroke", "navy");
+        .attr("r", 1.5)
+        .style("fill", "black")
+        // .style("stroke", "navy");
 
     detailGraph.append("g").attr("class", "brush").call(brush)
         .selectAll("rect").attr({
